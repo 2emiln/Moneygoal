@@ -45,3 +45,14 @@ Beräknar tid till mål (P10/P50/P90) från två Avanza-CSV och ett målbelopp. 
 python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 pip install -r requirements.txt
+
+## Körning
+```bash
+python -m sparkalk.cli \
+  --positions data/positions.csv \
+  --transactions data/transactions.csv \
+  --goal 1000000 \
+  --report result/time_to_goal_summary.csv
+
+streamlit run app/main.py
+
