@@ -2,7 +2,7 @@
 from pathlib import Path
 import pandas as pd
 
-# --- bashelpers ---
+
 def parse_number(s: str) -> float:
     return float(
         str(s).strip()
@@ -16,7 +16,7 @@ def parse_date(s: str) -> pd.Timestamp:
     # strikt YYYY-MM-DD
     return pd.to_datetime(s, format="%Y-%m-%d")
 
-# --- normalisering av redan inlästa DataFrames ---
+#  normalisering av redan inlästa DataFrames
 def normalize_positions(df: pd.DataFrame) -> pd.DataFrame:
     req = {"Marknadsvärde", "Valuta", "ISIN"}
     missing = req - set(df.columns)
@@ -39,7 +39,7 @@ def normalize_transactions(df: pd.DataFrame) -> pd.DataFrame:
     out["Belopp"] = out["Belopp"].map(parse_number)
     return out
 
-# --- tunna IO-wrappers (CSV -> normalize_*) ---
+# tunna IO-wrappers (CSV -> normalize_*) 
 def read_positions(path: str | Path) -> pd.DataFrame:
     df = pd.read_csv(path, sep=";", dtype=str, encoding="utf-8-sig")
     return normalize_positions(df)
