@@ -57,3 +57,9 @@ python -m sparkalk.cli \
 
 streamlit run app/main.py
 ```
+## Parametrar
+**Indata/Utdata**
+
+- Indata: `data/positions.csv`, `data/transactions.csv` (Avanza, sep ;, decimalkomma).
+
+- Utdata: `result/time_to_goal_summary.csv`, `result/diagnostics.csv`, loggar i logs/app.log.
