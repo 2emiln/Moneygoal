@@ -86,3 +86,14 @@ streamlit run app/main.py
 - Månadsspar = historiskt snitt över hela perioden.
 
 - Ingen extern prisdata. Courtage exkluderas.
+
+# Tester
+
+## Kör alla tester:
+```bash
+pytest -q
+```
+
+# Kända begränsningar
+
+- Endast Avanza-CSV. Ingen skatt/courtagemodell. Ingen deploy. Ingen extern prisdata.
