@@ -64,7 +64,7 @@ streamlit run app/main.py
 ```
 
 # Parametrar (default)
-
+```
 - paths=5000 — antal simuleringar
 
 - vol=0.04 — antagen månadsvolatilitet
@@ -76,3 +76,5 @@ streamlit run app/main.py
 - reinvest_dividends=false — återinvestera utdelningar
 
 - cagr_choice="historik" — antagande för CAGR om använt
+Ändras via CLI-flaggor eller i UI.
+```
