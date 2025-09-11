@@ -1,4 +1,4 @@
-# Sparkalkylatorn PoC
+# Moneygoal PoC
 
 Beräknar tid till mål (P10/P50/P90) från två Avanza-CSV och ett målbelopp. Ingen extern data. Courtage exkluderas.
 
@@ -8,7 +8,7 @@ Snabb PoC som kör lokalt, läser `positions.csv` och `transactions.csv`, och sk
 ## Krav och avgränsning
 **In-scope**
 - Indata: `positions.csv`, `transactions.csv` (Avanza-export).
-- Motor: MWRR/XIRR med bounds/fallback (`src/sparkalk/models/mwrr.py`).
+- Motor: MWRR/XIRR med bounds/fallback (`src/moneygoal/models/mwrr.py`).
 - Monte Carlo: Student-t; parametrar `paths`, `vol`, `seed`, `max_horizon_months`.
 - UI: Streamlit med två filuppladdare + målbelopp.
 - Tunn CLI.
@@ -35,16 +35,15 @@ Snabb PoC som kör lokalt, läser `positions.csv` och `transactions.csv`, och sk
 
 ## Utdata
 - `result/time_to_goal_summary.csv` — P10/P50/P90 i år och månader.
-- `result/diagnostics.csv` — parametrar, sanity-checks, checksums.
+- `result/diagnostics.csv` — parametrar, sanity checks, checksums.
 - `logs/app.log` — körloggar.
 
 ## Installation
 ```bash
-# valfritt: skapa venv
 python -m venv .venv
-# Linux/macOS:
+# Linux/macOS
 source .venv/bin/activate
-# Windows:
+# Windows
 # .venv\Scripts\activate
 
 pip install -r requirements.txt
@@ -53,47 +52,66 @@ pip install -r requirements.txt
 ## Körning
 ```bash
 # CLI (tunn)
-python -m sparkalk.cli \
-  --positions data/positions.csv \
-  --transactions data/transactions.csv \
-  --goal 1000000 \
-  --report result/time_to_goal_summary.csv
+python -m moneygoal.cli   --positions data/positions.csv   --transactions data/transactions.csv   --goal 1000000   --report result/time_to_goal_summary.csv
 
 # Streamlit-UI
 streamlit run app/main.py
 ```
 
-# Parametrar (default)
+## Parametrar (default)
 - `paths=5000` — antal simuleringar
-
 - `vol=0.04` — antagen månadsvolatilitet
-
 - `seed=42` — slumpfrö
-
 - `max_horizon_months=360` — max simlängd
-
 - `reinvest_dividends=false` — återinvestera utdelningar
-
 - `cagr_choice="historik"` — antagande för CAGR om använt
+
 Ändras via CLI-flaggor eller i UI.
 
-# Metod (kort)
-
+## Metod (kort)
 - MWRR/XIRR för kassaflöden med numerisk lösare, bounds och fallback.
-
 - Monte Carlo med Student-t för månadsavkastning.
-
 - Månadsspar = historiskt snitt över hela perioden.
-
 - Ingen extern prisdata. Courtage exkluderas.
 
-# Tester
-
-## Kör alla tester:
+## Tester
+Kör alla tester:
 ```bash
 pytest -q
 ```
+Täcker: parsing (`parse_date`, `parse_number`, schema), contributions (tecken och månadssummering), MWRR (konvergens/fallback), MC (determinism med seed), e2e-smoke (skapar utdata), valideringsfel (saknade kolumner).
 
-# Kända begränsningar
+## Projektstruktur (förslag)
+```
+src/moneygoal/
+  __init__.py
+  cli.py
+  io/
+    __init__.py
+    avanza_csv.py
+  models/
+    __init__.py
+    mwrr.py
+  sim/
+    __init__.py
+    monte_carlo.py
+app/
+  main.py
+tests/
+data/
+  raw/
+  processed/
+result/
+logs/
+```
 
-- Endast Avanza-CSV. Ingen skatt/courtagemodell. Ingen deploy. Ingen extern prisdata.
+## Snabbstart
+1. Lägg `data/positions.csv` och `data/transactions.csv` på plats.
+2. Kör CLI-kommandot ovan.
+3. Öppna `result/time_to_goal_summary.csv` och läs av P10/P50/P90.
+
+## Kända begränsningar
+Endast Avanza-CSV. Ingen skatt/courtagemodell. Ingen deploy. Ingen extern prisdata.
+
+## Licens
+MIT (eller valfritt).
