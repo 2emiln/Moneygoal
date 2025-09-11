@@ -1,4 +1,4 @@
-from src.moneygoal.io.avanza_csv import parse_number
+from moneygoal.io.avanza_csv import parse_number
 
 def test_parse_number_basic():
     assert parse_number("1,23") == 1.23
