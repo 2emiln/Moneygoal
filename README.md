@@ -76,3 +76,13 @@ streamlit run app/main.py
 
 - `cagr_choice="historik"` — antagande för CAGR om använt
 Ändras via CLI-flaggor eller i UI.
+
+# Metod (kort)
+
+- MWRR/XIRR för kassaflöden med numerisk lösare, bounds och fallback.
+
+- Monte Carlo med Student-t för månadsavkastning.
+
+- Månadsspar = historiskt snitt över hela perioden.
+
+- Ingen extern prisdata. Courtage exkluderas.
