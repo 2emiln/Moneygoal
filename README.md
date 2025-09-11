@@ -52,7 +52,7 @@ pip install -r requirements.txt
 ## Körning
 ```bash
 # CLI (tunn)
-python -m moneygoal.cli   --positions data/positions.csv   --transactions data/transactions.csv   --goal 1000000   --report result/time_to_goal_summary.csv
+python -m moneygoal.cli   --positions data/raw/positions.csv   --transactions data/raw/transactions.csv   --goal 1000000   --report result/time_to_goal_summary.csv
 
 # Streamlit-UI
 streamlit run app/main.py
@@ -81,7 +81,7 @@ pytest -q
 ```
 Täcker: parsing (`parse_date`, `parse_number`, schema), contributions (tecken och månadssummering), MWRR (konvergens/fallback), MC (determinism med seed), e2e-smoke (skapar utdata), valideringsfel (saknade kolumner).
 
-## Projektstruktur (förslag)
+## Projektstruktur
 ```
 src/moneygoal/
   __init__.py
@@ -106,7 +106,7 @@ logs/
 ```
 
 ## Snabbstart
-1. Lägg `data/positions.csv` och `data/transactions.csv` på plats.
+1. Lägg `data/raw/positions.csv` och `data/raw/transactions.csv` på plats.
 2. Kör CLI-kommandot ovan.
 3. Öppna `result/time_to_goal_summary.csv` och läs av P10/P50/P90.
 
