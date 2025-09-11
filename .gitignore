@@ -18,7 +18,8 @@ Thumbs.db
 .venv/
 __pycache__/
 *.pyc
-data/processed/
+data/processed/**
 result/*.tmp
+result/*.csv
 logs/*
 !logs/.gitkeep
