@@ -1,9 +1,19 @@
-# Python build/test artefakter
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build/packaging
 *.egg-info/
 build/
 dist/
+
+# Tests/coverage
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 
 # Editors/OS
@@ -12,14 +22,15 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Miljö
+# Env
 .env
 
-.venv/
-__pycache__/
-*.pyc
+# Data/artefakter (ej i repo)
+data/raw/**
 data/processed/**
-result/*.tmp
+
 result/*.csv
+result/*.tmp
+
 logs/*
 !logs/.gitkeep
