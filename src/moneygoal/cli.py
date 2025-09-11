@@ -26,28 +26,36 @@ def main(argv=None) -> int:
 
     try:
         df_pos = read_positions(args.positions)
-        df_trx = read_transactions(args.transactions)
+        _ = read_transactions(args.transactions)
 
         V0 = float(df_pos["Marknadsvärde"].sum())
 
-        # Dummy-resultat för smoke (tre rader P10/P50/P90)
+        # dummy-resultat för smoke
         out = pd.DataFrame(
             {"percentile": ["P10", "P50", "P90"], "years": [0, 0, 0], "months": [0, 0, 0]}
         )
         Path(args.report).parent.mkdir(parents=True, exist_ok=True)
         out.to_csv(args.report, index=False, encoding="utf-8")
 
-        # Diagnostics append
+        # diagnostics med header en gång
         diag_path = Path("result/diagnostics.csv")
         diag_path.parent.mkdir(parents=True, exist_ok=True)
-        diag_row = pd.DataFrame(
-            [{"stage": "smoke", "V0": V0, "goal": args.goal,
-              "positions_path": args.positions, "transactions_path": args.transactions}]
+        diag_row = pd.DataFrame([{
+            "stage": "smoke",
+            "V0": V0,
+            "goal": args.goal,
+            "positions_path": args.positions,
+            "transactions_path": args.transactions,
+        }])
+        exists = diag_path.exists()
+        write_header = (not exists) or (diag_path.stat().st_size == 0)
+        diag_row.to_csv(
+            diag_path,
+            mode="a" if exists else "w",
+            header=write_header,
+            index=False,
+            encoding="utf-8",
         )
-        if diag_path.exists():
-            diag_row.to_csv(diag_path, mode="a", header=False, index=False, encoding="utf-8")
-        else:
-            diag_row.to_csv(diag_path, index=False, encoding="utf-8")
 
         logging.info("E2E-smoke OK")
         return 0
