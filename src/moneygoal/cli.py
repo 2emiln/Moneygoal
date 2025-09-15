@@ -2,6 +2,7 @@ import argparse, sys, logging
 from pathlib import Path
 import pandas as pd
 from moneygoal.io.avanza_csv import read_positions, read_transactions
+from moneygoal.contrib import prepare_contribution_rows, mean_monthly_contribution
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser()
@@ -25,9 +26,14 @@ def main(argv=None) -> int:
 
     try:
         df_pos = read_positions(args.positions)
-        _ = read_transactions(args.transactions)
+        df_trx = read_transactions(args.transactions)
 
         V0 = float(df_pos["Marknadsvärde"].sum())
+
+        # contributions
+        rows = prepare_contribution_rows(df_trx)
+        mmc = mean_monthly_contribution(rows)
+        logging.info(f"mean_monthly_contrib={mmc}")
 
         # dummy-resultat för smoke
         out = pd.DataFrame(
@@ -43,6 +49,7 @@ def main(argv=None) -> int:
             "stage": "smoke",
             "V0": V0,
             "goal": args.goal,
+            "mean_monthly_contrib": mmc,
             "positions_path": args.positions,
             "transactions_path": args.transactions,
         }])
