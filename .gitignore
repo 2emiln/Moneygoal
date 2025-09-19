@@ -26,8 +26,8 @@ Thumbs.db
 .env
 
 # Data/artefakter (ej i repo)
-data/raw/**
-data/processed/**
+data/raw/
+data/processed/
 
 result/*.csv
 result/*.tmp
