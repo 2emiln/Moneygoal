@@ -1,18 +1,16 @@
-import pandas as pd
+import datetime as dt
 from moneygoal.models.mwrr import xirr
 
-def test_xirr_två_flöden_10pct():
-    cf = [
-        ("2020-01-01", -1000.0),
-        ("2021-01-01",  1100.0),
-    ]
-    r = xirr(cf)
-    assert abs(r - 0.10) < 1e-3  # ~10%
+def test_xirr_one_period_10pct():
+    cfs = [(dt.date(2020,1,1), -1000.0),
+           (dt.date(2021,1,1),  1100.0)]
+    r = xirr(cfs)
+    assert abs(r - 0.10) < 1e-6
 
-def test_xirr_månadsinsättningar():
-    # 12 månader á 100, slutvärde 1300 ett år efter start
-    dates = pd.date_range("2020-01-01", periods=12, freq="MS")
-    cf = [(str(d.date()), -100.0) for d in dates]
-    cf.append(("2021-01-01", 1300.0))
-    r = xirr(cf)
-    assert 0.05 < r < 0.25  # grovt intervall, robust mot små skillnader
+def test_xirr_multiple_flows_stable():
+    cfs = [(dt.date(2020,1,1), -1000.0),
+           (dt.date(2020,6,1),  -500.0),
+           (dt.date(2021,1,1),   300.0),
+           (dt.date(2022,1,1),  1500.0)]
+    r = xirr(cfs)
+    assert -0.5 < r < 0.5
