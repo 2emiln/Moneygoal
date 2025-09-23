@@ -1,3 +1,11 @@
+# -------------------------------------------------------------------
+# Detta modulavsnitt innehåller funktioner för att läsa in och
+# normalisera Avanzas CSV-filer (positions och transactions).
+# Tanken är att:
+#   - först läsa in all data som strängar,
+#   - sedan konvertera till rätt datatyper (tal och datum),
+#   - samt säkerställa att de kolumner vi förväntar oss finns.
+# -------------------------------------------------------------------
 
 from pathlib import Path
 import pandas as pd
@@ -108,7 +116,7 @@ def read_positions(path: str | Path) -> pd.DataFrame:
     2. Skicka DataFrame vidare till normalize_positions().
     3. Returnera resultatet.
     """
-    
+
     df = pd.read_csv(path, sep=";", dtype=str, encoding="utf-8-sig")
     return normalize_positions(df)
 

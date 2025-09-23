@@ -10,22 +10,36 @@ from moneygoal.diagnostics import diagnostics_dict
 
 
 def main(argv=None) -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--positions", required=True)
-    p.add_argument("--transactions", required=True)
-    p.add_argument("--goal", type=float, required=True, help="Målbelopp i SEK")
-    p.add_argument("--report", required=True)
+    """
+    Pedagogik: Detta är CLI-ingången som
+      1) läser in positions/transactions,
+      2) beräknar nuvärde och genomsnittligt månadsspar,
+      3) kör Monte Carlo för tid till mål (P10/P50/P90),
+      4) skriver rapport och diagnostics,
+      5) loggar utfallet och returnerar exit-kod.
 
-    # Monte Carlo-parametrar
-    p.add_argument("--paths", type=int, default=5000)
-    p.add_argument("--vol", type=float, default=0.15)
-    p.add_argument("--cagr", type=float, default=0.06)
-    p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--maxhorisont", type=int, default=600, help="Max månader")
+    Return:
+        0  → OK
+        1  → Körtidsfel (fångat undantag)
+        2  → Argumentfel (tidig validering)
+    """
+    # 1) Definiera CLI-argument
+    p = argparse.ArgumentParser(description="Beräkna tid till ekonomiskt mål med Monte Carlo.")
+    p.add_argument("--positions", required=True, help="Sökväg till positions.csv (Avanza-export).")
+    p.add_argument("--transactions", required=True, help="Sökväg till transactions.csv (Avanza-export).")
+    p.add_argument("--goal", type=float, required=True, help="Målbelopp i SEK.")
+    p.add_argument("--report", required=True, help="Fil att skriva P10/P50/P90-rapport till (CSV).")
+
+    # 2) Monte Carlo-parametrar med rimliga default
+    p.add_argument("--paths", type=int, default=5000, help="Antal simuleringar.")
+    p.add_argument("--vol", type=float, default=0.15, help="Årsvolatilitet (std) som andel, t.ex. 0.15 = 15%.")
+    p.add_argument("--cagr", type=float, default=0.06, help="Antagen årlig avkastning (CAGR), 0–1.")
+    p.add_argument("--seed", type=int, default=42, help="Slumptalsfrö för reproducerbarhet.")
+    p.add_argument("--maxhorisont", type=int, default=600, help="Max simlängd i månader.")
 
     args = p.parse_args(argv)
 
-    # --- CLI guards ---
+    # 3) Tidig argumentvalidering: snabbare fel och tydligare felmeddelanden
     errs = []
     if not Path(args.positions).is_file():
         errs.append(f"--positions saknas: {args.positions}")
@@ -43,12 +57,12 @@ def main(argv=None) -> int:
         errs.append("--maxhorisont måste vara ≥ 1")
 
     if errs:
+        # Samlad utskrift till stderr för enkel CLI-felsökning
         for e in errs:
             print(f"ARGERROR: {e}", file=sys.stderr)
         return 2
 
-
-    # logging
+    # 4) Grundläggande fil-loggning: fångar körningar och parametrar
     Path("logs").mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         filename="logs/app.log",
@@ -64,19 +78,20 @@ def main(argv=None) -> int:
     )
 
     try:
-        # Läs data
+        # 5) Läs in och normalisera CSV via IO-lagret (se avanza_csv)
         df_pos = read_positions(args.positions)
         df_trx = read_transactions(args.transactions)
 
-        # Nuvärde
+        # 6) Nuvärde: summan av Marknadsvärde över alla tillgångar
         V0 = float(df_pos["Marknadsvärde"].sum())
 
-        # Månadsspar (snitt)
+        # 7) Månadsspar: bygg rena rader för insättning/uttag och ta månatligt medel
         rows = prepare_contribution_rows(df_trx)
         mmc = mean_monthly_contribution(rows)
         logging.info(f"mean_monthly_contrib={mmc}")
 
-        # Monte Carlo
+        # 8) Monte Carlo-simulering av tid till mål
+        #    Input: nuvärde, genomsnittligt månadsspar, CAGR, vol, maxmånader, paths, mål
         mc = time_to_goal_mc(
             nuvarde=V0,
             mean_monthly_contrib=mmc,
@@ -88,8 +103,9 @@ def main(argv=None) -> int:
             seed=args.seed,
         )
 
-        # Rapport (P10/P50/P90)
+        # 9) Skriv en kompakt CSV-rapport med P10/P50/P90 i år och månader
         def y_m(m: int) -> tuple[int, int]:
+            # Hjälpare: konvertera månader → (år, månader)
             return m // 12, m % 12
 
         p10y, p10m = y_m(mc["p10"])
@@ -106,7 +122,7 @@ def main(argv=None) -> int:
         Path(args.report).parent.mkdir(parents=True, exist_ok=True)
         out.to_csv(args.report, index=False, encoding="utf-8")
 
-        # Konsolutskrift
+        # 10) Konsolutskrift: snabb mänsklig läsning i terminalen
         def fmt(m: int) -> str:
             return f"{m//12} år {m%12} mån"
 
@@ -116,7 +132,8 @@ def main(argv=None) -> int:
             f"P90: {fmt(mc['p90'])}"
         )
 
-        # Diagnostics (inkl. XIRR)
+        # 11) Diagnostics: skriv sammanfattning + XIRR till result/diagnostics.csv
+        #     - Append-läge med header endast när filen skapas eller är tom.
         diag = {
             "asof": dt.date.today().isoformat(),
             "stage": "run",
@@ -134,8 +151,8 @@ def main(argv=None) -> int:
             "positions_path": args.positions,
             "transactions_path": args.transactions,
         }
-        # xirr
-        diag.update(diagnostics_dict(df_trx, df_pos))  # {"xirr": ...}
+        # diagnostics_dict kan räkna t.ex. XIRR baserat på df_trx/df_pos
+        diag.update(diagnostics_dict(df_trx, df_pos))  # t.ex. {"xirr": ...}
 
         diag_path = Path("result/diagnostics.csv")
         diag_path.parent.mkdir(parents=True, exist_ok=True)
@@ -153,10 +170,12 @@ def main(argv=None) -> int:
         return 0
 
     except Exception as e:
+        # 12) Robust felhantering: logga stacktrace och skriv kort fel till stderr
         logging.exception("Run failed")
         print(f"ERROR: {e}", file=sys.stderr)
         return 1
 
 
 if __name__ == "__main__":
+    # Standardmönster för CLI-moduler
     sys.exit(main())
