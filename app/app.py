@@ -206,12 +206,22 @@ if run:
         st.write(f"Snitt månadsspar: {mmc:,.2f} SEK/mån".replace(",", " ").replace(".", ","))
         st.write(f"XIRR: {diag['xirr']:.2%}")
 
-        # Visa sista loggposten i diagnostics för snabb kontroll
+        # Visa senaste diagnostics vertikalt
         try:
             last = pd.read_csv(RESULT_DIAG).tail(1)
-            st.dataframe(last)
+            order = [
+                "asof","stage","V0","goal","mean_monthly_contrib",
+                "paths","vol","cagr","seed","maxhorisont",
+                "p10_months","p50_months","p90_months","xirr",
+                "positions_path","transactions_path",
+            ]
+            last = last[[c for c in order if c in last.columns]]
+            kv = last.T.reset_index()
+            kv.columns = ["fält", "värde"]
+            st.subheader("Diagnostics (detalj)")
+            st.dataframe(kv, use_container_width=True, hide_index=True)
         except Exception:
-            pass  # UI ska inte krascha om läsningen fallerar
+            pass    # UI ska inte krascha om läsningen fallerar
 
         # Nedladdningar: gör det enkelt att exportera resultat
         st.download_button(
