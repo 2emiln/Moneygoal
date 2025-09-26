@@ -235,5 +235,4 @@ streamlit run app/app.py
 - Toggle i UI/CLI för utdelningar: återinvestera vs. kontant mot mål.
 - Diagnostics: summering av insättningar/uttag/netto.
 - Känslighetsanalys: grid över `cagr, vol, paths` och seeds.
-- Skärmdumpar i README.
 
